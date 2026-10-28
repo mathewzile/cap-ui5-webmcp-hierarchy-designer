@@ -1,11 +1,13 @@
+import Element from "sap/ui/core/Element";
 import type Model from "sap/ui/model/Model";
 import type ODataContextBinding from "sap/ui/model/odata/v4/ODataContextBinding";
 import type ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
+import type Table from "sap/ui/mdc/Table";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { WebMCP } from "webmcp-types";
 
 /**
- * @namespace browsegenre
+ * @namespace browsegenres
  */
 export default class WebMCPController {
   public static register(model: Model | undefined): AbortController | null {
@@ -14,6 +16,7 @@ export default class WebMCPController {
     if (!modelContext || !modelContext.registerTool || !model) {
       return null;
     }
+    debugger;
 
     // Register tools and abort controller
     const controller = new AbortController();
@@ -30,7 +33,16 @@ export default class WebMCPController {
           ) as ODataContextBinding;
           await actionBinding.invoke();
 
-          model.refresh(); // TODO: just get the list binding and refresh model.bindList("/Genres").refresh();
+          // Refresh list report table
+          const table = Element.getElementById(
+            "browsegenres::GenresList--fe::table::Genres::LineItem",
+          ) as Table | undefined;
+          if (table) {
+            const listBinding = (
+              table as any
+            ).getRowBinding() as ODataListBinding;
+            listBinding.refresh();
+          }
         },
         // annotations: {}
       },
@@ -100,6 +112,7 @@ export default class WebMCPController {
             return;
           }
 
+          // TODO: use Nested Single Entity create if possible https://ui5.sap.com/#/topic/c9723f8265f644af91c0ed941e114d46
           const list = model.bindList("/Genres") as ODataListBinding;
           const nodeContexts: Promise<void>[] = [];
           for (const entry of input.nodes) {
@@ -111,7 +124,16 @@ export default class WebMCPController {
           }
           await Promise.allSettled(nodeContexts);
 
-          model.refresh(); // TODO: just get the list binding and refresh model.bindList("/Genres").refresh();
+          // Refresh list report table
+          const table = Element.getElementById(
+            "browsegenres::GenresList--fe::table::Genres::LineItem",
+          ) as Table | undefined;
+          if (table) {
+            const listBinding = (
+              table as any
+            ).getRowBinding() as ODataListBinding;
+            listBinding.refresh();
+          }
         },
         // annotations: {}
       },
