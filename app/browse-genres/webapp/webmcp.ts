@@ -1,10 +1,10 @@
-import Element from "sap/ui/core/Element";
+import UI5Element from "sap/ui/core/Element";
 import type Model from "sap/ui/model/Model";
 import type ODataContextBinding from "sap/ui/model/odata/v4/ODataContextBinding";
 import type ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import type Table from "sap/ui/mdc/Table";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { WebMCP } from "webmcp-types";
+// Side-effect type import: pulls in the global `document.modelContext` typings
+import type {} from "webmcp-types";
 
 /**
  * @namespace browsegenres
@@ -16,7 +16,6 @@ export default class WebMCPController {
     if (!modelContext || !modelContext.registerTool || !model) {
       return null;
     }
-    debugger;
 
     // Register tools and abort controller
     const controller = new AbortController();
@@ -33,16 +32,7 @@ export default class WebMCPController {
           ) as ODataContextBinding;
           await actionBinding.invoke();
 
-          // Refresh list report table
-          const table = Element.getElementById(
-            "browsegenres::GenresList--fe::table::Genres::LineItem",
-          ) as Table | undefined;
-          if (table) {
-            const listBinding = (
-              table as any
-            ).getRowBinding() as ODataListBinding;
-            listBinding.refresh();
-          }
+          WebMCPController.refreshListReport();
         },
         // annotations: {}
       },
@@ -86,28 +76,7 @@ export default class WebMCPController {
           required: ["nodes"],
         },
         execute: async (input: Record<"nodes", Record<string, string>[]>) => {
-          // SAMPLE PROMPT:
-          // Can you design a new hierarchy (one new root) for Music genres: root is "Metal" music, please suggest
-          // the sub-genres (children) and sub-sub-genres (grandchildren). Use design-hierarchy tool to create it
-          // SAMPLE INPUT:
-          // {
-          //   "nodes":[
-          //       {
-          //         "ID":"dd4de802-e148-4607-9dbb-243e2ec4e980",
-          //         "name":"Root"
-          //       },
-          //       {
-          //         "ID":"3a49edf7-9451-4738-abe6-90b909013e41",
-          //         "parent_ID":"dd4de802-e148-4607-9dbb-243e2ec4e980",
-          //         "name":"Child"
-          //       },
-          //       {
-          //         "ID":"353abba6-51a2-4beb-923c-9c9d7213b769",
-          //         "parent_ID":"3a49edf7-9451-4738-abe6-90b909013e41",
-          //         "name":"Grandchild"
-          //       }
-          //   ]
-          // }
+          // See readme.md for a sample prompt and input
           if (!input || !input.nodes.length) {
             return;
           }
@@ -124,16 +93,7 @@ export default class WebMCPController {
           }
           await Promise.allSettled(nodeContexts);
 
-          // Refresh list report table
-          const table = Element.getElementById(
-            "browsegenres::GenresList--fe::table::Genres::LineItem",
-          ) as Table | undefined;
-          if (table) {
-            const listBinding = (
-              table as any
-            ).getRowBinding() as ODataListBinding;
-            listBinding.refresh();
-          }
+          WebMCPController.refreshListReport();
         },
         // annotations: {}
       },
@@ -143,5 +103,15 @@ export default class WebMCPController {
     );
 
     return controller;
+  }
+
+  /**
+   * Refreshes the list report table's own list binding, so that the UI reflects the changes
+   */
+  private static refreshListReport(): void {
+    const table = UI5Element.getElementById(
+      "browsegenres::GenresList--fe::table::Genres::LineItem",
+    ) as (Table & { getRowBinding(): ODataListBinding | undefined }) | undefined;
+    table?.getRowBinding()?.refresh();
   }
 }
