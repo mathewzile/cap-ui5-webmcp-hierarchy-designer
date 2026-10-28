@@ -2,7 +2,7 @@ import cds from "@sap/cds";
 
 export class AdminService extends cds.ApplicationService {
   init() {
-    // const { Genres } = this.entities;
+    const { Genres } = this.entities;
 
     /**
      * Generate IDs for new Books drafts
@@ -15,7 +15,7 @@ export class AdminService extends cds.ApplicationService {
     // })
 
     this.on("purgeNonFiction", (req) => {
-      req.info(200, `Purging non-fiction genres is not implemented yet.`);
+      return DELETE.from(Genres).where`ID like '2%'`;
     });
 
     return super.init();
