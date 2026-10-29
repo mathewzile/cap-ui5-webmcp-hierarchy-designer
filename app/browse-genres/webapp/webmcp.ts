@@ -1,4 +1,5 @@
 import UI5Element from "sap/ui/core/Element";
+import MessageToast from "sap/m/MessageToast";
 import type Model from "sap/ui/model/Model";
 import type ODataContextBinding from "sap/ui/model/odata/v4/ODataContextBinding";
 import type ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
@@ -33,6 +34,8 @@ export default class WebMCPController {
           await actionBinding.invoke();
 
           WebMCPController.refreshListReport();
+          MessageToast.show("Purge successful");
+          return "ok";
         },
         // annotations: {}
       },
@@ -94,6 +97,9 @@ export default class WebMCPController {
           await Promise.allSettled(nodeContexts);
 
           WebMCPController.refreshListReport();
+          MessageToast.show(input.nodes.length + " nodes created");
+
+          return "ok";
         },
         // annotations: {}
       },
@@ -111,7 +117,9 @@ export default class WebMCPController {
   private static refreshListReport(): void {
     const table = UI5Element.getElementById(
       "browsegenres::GenresList--fe::table::Genres::LineItem",
-    ) as (Table & { getRowBinding(): ODataListBinding | undefined }) | undefined;
+    ) as
+      | (Table & { getRowBinding(): ODataListBinding | undefined })
+      | undefined;
     table?.getRowBinding()?.refresh();
   }
 }
